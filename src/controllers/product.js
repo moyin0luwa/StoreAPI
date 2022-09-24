@@ -1,13 +1,13 @@
 const productList = require("../models/productModel");
 
 const getAllProductsStatic = async (req, res) => {
-	const products = await productList.find({}).sort("-name");
+	const products = await productList.find({}).select("name price rating");
 	res.status(200).json({ products, nbHits: products.length });
 };
 
 // Controller for the function to obtain a certain product or list of products fro a search query
 const getAllProducts = async (req, res) => {
-	const { featured, company, name, sort } = req.query;
+	const { featured, company, name, sort, fields } = req.query;
 	const queryObject = {};
 	if (featured) {
 		queryObject.featured = featured === "true" ? true : false;
@@ -27,6 +27,13 @@ const getAllProducts = async (req, res) => {
 		searchResult = searchResult.sort(sortParams)
 	} else {
 		searchResult = searchResult.sort('createdAt')
+	}
+
+	// Functionality to selct which fields to be dispalyed in the results
+	if (fields) {
+		const selectFields = fields.split(",").join(" ");
+		searchResult = searchResult.select(selectFields)
+
 	}
 
 	const products = await searchResult;
